@@ -1,15 +1,31 @@
 package TwitchIRC
-
+import scala.concurrent.{ Future, future, ExecutionContext }
+import ExecutionContext.Implicits.global
+import scala.collection.immutable
+import scala.collection.mutable
 /**
   * @author 0Seren
   */
 class TwitchIRC(private val _username : String, private val auth_token : String, membership : Boolean = true, commands : Boolean = true, tags : Boolean = true) {
 	require(auth_token.startsWith("oauth:"), "Must use a valid oauth token.")
-	private val username = _username.toLowerCase
-	private val socket_listener = new SocketListener("irc.twitch.tv", 6667)
+	private[this] val username = _username.toLowerCase
+	private[this] val reader = new Connection("irc.twitch.tv", 6667)
+	private[this] val connectionPool : mutable.Seq[Connection] = mutable.Seq(
+		new Connection("irc.twitch.tv", 6667),
+		new Connection("irc.twitch.tv", 6667),
+		new Connection("irc.twitch.tv", 6667),
+		new Connection("irc.twitch.tv", 6667),
+		new Connection("irc.twitch.tv", 6667))
 	connect;
 
-	private def connect {
+	//TODO: SHHHHHHHHH This is cheating. Should change this later
+	private[this] val ThisWillNeverBeUsedButThisIsEasierThanMakingNewThreadsOrActors = Future {
+		while (true) {
+			connectionPool.foreach { connection => connection.updateTimeStamps }
+		}
+	}
+
+	private[this] def connect {
 		sendMessage("PASS " + auth_token)
 		sendMessage("NICK " + username)
 		if (membership) sendMessage("CAP REQ :twitch.tv/membership")
@@ -33,9 +49,9 @@ class TwitchIRC(private val _username : String, private val auth_token : String,
 		channels.foreach(c => leaveChannel(c))
 	}
 
-	def sendMessage(msg : String) {
-		if (!msg.endsWith("\r\n")) socket_listener.sendMessage(msg + "\r\n")
-		else socket_listener.sendMessage(msg)
+	def sendMessage(_msg : String) {
+		val msg = _msg + (if (!_msg.endsWith("\r\n")) "\r\n" else "")
+		reader.sendMessage(msg)
 	}
 
 	def sendMessage(msg : String, channel : String) {
@@ -43,7 +59,7 @@ class TwitchIRC(private val _username : String, private val auth_token : String,
 	}
 
 	def getMessage() : Option[Message] = {
-		socket_listener.getNextMessage match {
+		reader.getNextMessage match {
 			case None => None
 			case Some(s) => {
 				if (s.startsWith("PING ")) sendMessage("PONG " + s.drop(5))

@@ -1,14 +1,8 @@
 package TwitchIRC
-import java.util.Date
 /**
   * @author 0Seren
   */
 object Parser {
-	/* TODO: ADD TimeStamps
-	 * private val DateFormatter : java.text.DateFormat = new java.text.SimpleDateFormat("MM/dd/YY HH:mm:ss:SSS z");
-	 * private val date : java.util.Date = new java.util.Date(System.currentTimeMillis)
-	 * private val dateFormatted = DateFormatter.format(date)
-	 */
 
 	def StringAsMessage(s : String) : Message = {
 		s match {
@@ -34,26 +28,26 @@ object Parser {
 	}
 
 	//std
-	private val viewerToChannelPattern = "^:([^!]+)!\\1@\\1\\.tmi\\.twitch\\.tv PRIVMSG #(\\S+) :(.+)".r
-	private val pingPattern = "^PING (.+)".r
-	private val twitchToIRCPatternStdPattern = "^:tmi\\.twitch\\.tv (.+)".r
-	private val twitchToIRCPatternSelfPattern = "^:\\S+\\.tmi.twitch\\.tv (.+)".r
-	private val twitchToIRCPatternJTVPattern = "^:jtv (.+)".r
+	private[this] val viewerToChannelPattern = "^:([^!]+)!\\1@\\1\\.tmi\\.twitch\\.tv PRIVMSG #(\\S+) :(.+)".r
+	private[this] val pingPattern = "^PING (.+)".r
+	private[this] val twitchToIRCPatternStdPattern = "^:tmi\\.twitch\\.tv (.+)".r
+	private[this] val twitchToIRCPatternSelfPattern = "^:\\S+\\.tmi.twitch\\.tv (.+)".r
+	private[this] val twitchToIRCPatternJTVPattern = "^:jtv (.+)".r
 	//membership
-	private val joinPartPattern = "^:([^!]+)!\\1@\\1\\.tmi\\.twitch\\.tv (\\S+) #(\\S+)".r //Generic Status Message for Join, Part
-	private val modJoinPartPattern = "^:jtv MODE #(\\S+) (\\p{Punct}o .+)".r
+	private[this] val joinPartPattern = "^:([^!]+)!\\1@\\1\\.tmi\\.twitch\\.tv (\\S+) #(\\S+)".r //Generic Status Message for Join, Part
+	private[this] val modJoinPartPattern = "^:jtv MODE #(\\S+) (\\p{Punct}o .+)".r
 	//commands
-	private val noticePattern = "^@msg-id=(\\S+) :tmi\\.twitch\\.tv NOTICE #(\\S+) :(.+)".r
-	private val hostStartPattern = "^:tmi\\.twitch\\.tv HOSTTARGET #(\\S+) :(\\S+) .+".r
-	private val hostStopPattern = "^:tmi\\.twitch\\.tv HOSTTARGET #(\\S+) :[-] .+".r
-	private val userTimedOutPattern = "^:tmi\\.twitch\\.tv CLEARCHAT #(\\S+) :(.+)".r
-	private val chatClearedPattern = "^:tmi\\.twitch\\.tv CLEARCHAT #(\\S+)".r
-	private val userstatePattern = "^:tmi\\.twitch\\.tv USERSTATE #(\\S+)".r
-	private val roomstatePattern = "^:tmi\\.twitch\\.tv ROOMSTATE #(\\S+)".r
+	private[this] val noticePattern = "^@msg-id=(\\S+) :tmi\\.twitch\\.tv NOTICE #(\\S+) :(.+)".r
+	private[this] val hostStartPattern = "^:tmi\\.twitch\\.tv HOSTTARGET #(\\S+) :(\\S+) .+".r
+	private[this] val hostStopPattern = "^:tmi\\.twitch\\.tv HOSTTARGET #(\\S+) :[-] .+".r
+	private[this] val userTimedOutPattern = "^:tmi\\.twitch\\.tv CLEARCHAT #(\\S+) :(.+)".r
+	private[this] val chatClearedPattern = "^:tmi\\.twitch\\.tv CLEARCHAT #(\\S+)".r
+	private[this] val userstatePattern = "^:tmi\\.twitch\\.tv USERSTATE #(\\S+)".r
+	private[this] val roomstatePattern = "^:tmi\\.twitch\\.tv ROOMSTATE #(\\S+)".r
 	//tags
-	private val viewerToChannelWithTagsPattern = "^@(\\S+) :([^!]+)!\\2@\\2\\.tmi\\.twitch\\.tv PRIVMSG #(\\S+) :(.+)".r
-	private val userstateWithTagsPattern = "^@(\\S+) :tmi\\.twitch\\.tv USERSTATE #(\\S+)".r
-	private val roomstateWithTagsPattern = "^@(\\S+) :tmi\\.twitch\\.tv ROOMSTATE #(\\S+)".r
+	private[this] val viewerToChannelWithTagsPattern = "^@(\\S+) :([^!]+)!\\2@\\2\\.tmi\\.twitch\\.tv PRIVMSG #(\\S+) :(.+)".r
+	private[this] val userstateWithTagsPattern = "^@(\\S+) :tmi\\.twitch\\.tv USERSTATE #(\\S+)".r
+	private[this] val roomstateWithTagsPattern = "^@(\\S+) :tmi\\.twitch\\.tv ROOMSTATE #(\\S+)".r
 
 	/**
 	  * Converts a String to Emote Objects
@@ -75,7 +69,7 @@ object Parser {
 	/**
 	  * converts tags to a map of (tag -> data)
 	  */
-	private def dealWithTags(tagsAsString : String, channel : String = "_", name : String = "") : Option[Map[String, String]] = {
+	private[this] def dealWithTags(tagsAsString : String, channel : String = "_", name : String = "") : Option[Map[String, String]] = {
 		try {
 			val tags = if (tagsAsString.startsWith("@")) tagsAsString.drop(1) else tagsAsString
 			Some(tags.split(";").map { t =>
