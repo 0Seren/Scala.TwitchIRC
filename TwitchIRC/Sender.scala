@@ -25,7 +25,7 @@ case class Sender(_name : String, _tags : Map[String, String] = Map()) {
 	def user_type() : String = {
 		val level = _tags.getOrElse("user-type", "")
 		if (level == "" || !Sender.levels.contains(level)) {
-			Sender.viewer()
+			Sender.viewer
 		} else {
 			level
 		}
@@ -39,7 +39,7 @@ object Sender {
 	def admin() = "admin"
 	def staff() = "staff"
 	def owner() = "owner"
-	def levels() : Array[String] = Array(viewer, mod, global_mod, admin, staff, owner)
+	def levels() : Set[String] = Set(viewer, mod, global_mod, admin, staff, owner)
 	def Twitch() = Sender("tmi.twitch.tv", Map("level" -> staff, "display-name" -> "TWITCH", "subscriber" -> "1", "turbo" -> "1"))
 	def Error() = Sender("error.twitch.tv", Map("level" -> staff, "display-name" -> "[ERROR]", "subscriber" -> "1", "turbo" -> "1"))
 }

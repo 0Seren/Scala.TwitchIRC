@@ -2,7 +2,7 @@ package TwitchIRC
 /**
   * @author 0Seren
   */
-object Parser {
+private[TwitchIRC] object Parser {
 
 	def StringAsMessage(s : String) : Message = {
 		s match {

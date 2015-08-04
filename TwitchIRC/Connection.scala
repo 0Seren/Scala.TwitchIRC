@@ -45,6 +45,7 @@ class Connection(server : String, port : Int) {
 	 * Determines if the Socket is ready. Depending on if it's a mod or not. This is to avoid the global ban.
 	 */
 	def ready(isMod : Boolean = true) : Boolean = {
+		updateTimeStamps
 		timeStamps.length < (if (isMod) 100 else 20)
 	}
 }
