@@ -8,7 +8,7 @@ case class Sender(_name : String, _tags : Map[String, String] = Map()) {
 		_tags.getOrElse("display-name", _name)
 	}
 	def emotes() : Option[Array[Emote]] = {
-		Parser.StringAsEmotes(_tags.getOrElse("emotes", ""))
+		Emote.StringAsEmotes(_tags.getOrElse("emotes", ""))
 	}
 	def color() : Option[String] = {
 		_tags.get("color")
