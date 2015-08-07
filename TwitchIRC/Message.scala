@@ -36,7 +36,7 @@ object Message {
     }
   }
 
-  private[this] def dealWithTags(tagsAsString : String, channel : String = "_", name : String = "") : Option[Map[String, String]] = {
+  def dealWithTags(tagsAsString : String, channel : String = "_", name : String = "") : Option[Map[String, String]] = {
     try {
       val tags = if (tagsAsString.startsWith("@")) tagsAsString.drop(1) else tagsAsString
       Some(tags.split(";").map { t =>
