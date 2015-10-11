@@ -10,18 +10,19 @@ import scala.collection.mutable
   *
   * server       : String            -> The server to connect to
   * port         : Int               -> The port to connect to
-  * messageLimit : Tuple2[Int, Long] -> A message limit represented as (messages[Int] per[,] time in milliseconds[Long]). For no message limit make messages be negative.
   */
-class Connection(server : String, port : Int, messageLimit : Tuple2[Int, Long] = (100, 30000)) {
+class Connection(username : String, auth_token : String, server : String = "irc.twitch.tv", port : Int = 6667) {
   private[this] val timeStamps : mutable.Queue[Long] = mutable.Queue()
   private[this] val address : java.net.InetAddress = java.net.InetAddress.getByName(server)
   private[this] val socket : java.net.Socket = new java.net.Socket(address, port)
-
-  //Output Stream
   private[this] val writer = new java.io.BufferedWriter(new java.io.OutputStreamWriter(socket.getOutputStream))
-
-  //Input Stream
   private[this] val reader = new java.io.BufferedReader(new java.io.InputStreamReader(socket.getInputStream))
+
+  sendMessage("PASS " + auth_token + "\r\n")
+  sendMessage("NICK " + username + "\r\n")
+  sendMessage("CAP REQ :twitch.tv/membership\r\n")
+  sendMessage("CAP REQ :twitch.tv/commands\r\n")
+  sendMessage("CAP REQ :twitch.tv/tags\r\n")
 
   def getNextMessage : Option[String] = {
     if (reader.ready) {
@@ -31,33 +32,27 @@ class Connection(server : String, port : Int, messageLimit : Tuple2[Int, Long] =
     }
   }
 
-  def sendMessage(msg : String) {
+  def sendMessage(msg : String) : Boolean = {
     try {
       writer.write(msg)
       writer.flush
       timeStamps += System.currentTimeMillis
+      updateTimeStamps
+      true
     } catch {
-      case t : Throwable => println(t.getStackTrace)
+      case t : Throwable => false
     }
-    updateTimeStamps
   }
 
-  /**
-    * Remove Time Stamps from the Queue if they're older than messageLimit._2
-    */
-  def updateTimeStamps {
-    while (timeStamps.size > 0 && System.currentTimeMillis - timeStamps.head > messageLimit._2) {
+  def updateTimeStamps() {
+    while (timeStamps.size > 0 && System.currentTimeMillis - timeStamps.head > 30000) {
       timeStamps.dequeue
     }
   }
 
-  /**
-    * Determines if the Connection is ready depending on the messageLimit
-    */
   def ready() : Boolean = {
     updateTimeStamps
-    if (messageLimit._1 >= 0) timeStamps.length < messageLimit._1
-    else true
+    timeStamps.size < 20
   }
 
   def close() : Boolean = {
@@ -67,7 +62,7 @@ class Connection(server : String, port : Int, messageLimit : Tuple2[Int, Long] =
       true
     } catch {
       case t : Throwable => {
-        println(t.getStackTrace)
+        throw t
         false
       }
     }

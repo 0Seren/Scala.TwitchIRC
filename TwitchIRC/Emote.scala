@@ -12,7 +12,7 @@ case class Emote(_id : Int, _indices : Array[(Int, Int)]) {
   def indices : Seq[(Int, Int)] = _indices
 }
 object Emote {
-  def StringAsEmotes(s : String) : Option[Array[Emote]] = {
+  def StringAsEmotes(s : String) : Option[Seq[Emote]] = {
     try {
       Some(s.split("/").map { e =>
         val eSplit = e.split(":")

@@ -11,7 +11,7 @@ case class Sender(_name : String, _tags : Map[String, String] = Map()) {
     _tags.getOrElse("display-name", _name)
   }
 
-  def emotes() : Option[Array[Emote]] = {
+  def emotes() : Option[Seq[Emote]] = {
     Emote.StringAsEmotes(_tags.getOrElse("emotes", ""))
   }
 

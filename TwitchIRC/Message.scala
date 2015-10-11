@@ -39,13 +39,13 @@ object Message {
   def dealWithTags(tagsAsString : String, channel : String = "_", name : String = "") : Option[Map[String, String]] = {
     try {
       val tags = if (tagsAsString.startsWith("@")) tagsAsString.drop(1) else tagsAsString
-      Some(tags.split(";").map { t =>
+      Some((tags.split(";").map { t =>
         val parts = t.split("=")
         if (parts(0) == "user-type" && channel == name) "user-type" -> Sender.owner
         else if (parts.size < 2) "" -> ""
         else if (parts(1) == "") "" -> ""
         else parts(0) -> parts(1).replaceAll("\\\\s", " ").replaceAll("\\\\:", ";").replaceAll("\\\\\\\\", "\\").replaceAll("\\\\r", "\r").replaceAll("\\\\n", "\n")
-      }.toMap - "")
+      }(collection.breakOut) : Map[String, String]) - "")
     } catch {
       case t : Throwable => None
     }
