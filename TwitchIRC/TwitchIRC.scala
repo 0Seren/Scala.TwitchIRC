@@ -43,7 +43,7 @@ class TwitchIRC(private val _username : String, private val auth_token : String,
   }
 
   def joinChannel(channel : String) : Boolean = {
-    while (System.currentTimeMillis - joins.head > 15000) {
+    while (joins.size > 0 && System.currentTimeMillis - joins.head > 15000) {
       joins.dequeue()
     }
     if (joins.size == 50) {
@@ -84,7 +84,7 @@ class TwitchIRC(private val _username : String, private val auth_token : String,
     senders.forall(_.close()) && reader.close()
   }
 
-  def emptySenders {
+  def emptySenders() {
     senders.foreach(emptyConnection(_))
   }
 

@@ -24,7 +24,7 @@ class Connection(username : String, auth_token : String, server : String = "irc.
   sendMessage("CAP REQ :twitch.tv/commands\r\n")
   sendMessage("CAP REQ :twitch.tv/tags\r\n")
 
-  def getNextMessage : Option[String] = {
+  def getNextMessage() : Option[String] = {
     if (reader.ready) {
       Some(reader.readLine)
     } else {
