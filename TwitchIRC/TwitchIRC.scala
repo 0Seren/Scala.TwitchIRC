@@ -93,7 +93,8 @@ class TwitchIRC(private val _username : String, private val auth_token : String)
   }
 
   def close() : Boolean = {
-    helperThread.interrupt
+    helperThread.interrupt()
+    helperThread.join()
     leaveChannels(channels)
     emptySenders()
     emptyConnection(reader)
