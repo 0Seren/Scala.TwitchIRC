@@ -11,18 +11,35 @@ class TwitchIRC(private val _username : String, private val auth_token : String)
   private[this] val reader : Connection = new Connection(username, auth_token)
   private[this] val senders : mutable.ArrayBuffer[Connection] = mutable.ArrayBuffer(new Connection(username, auth_token))
   private[this] val channels : mutable.Set[String] = mutable.Set()
+  private[this] val mailbox : mutable.Queue[Message] = mutable.Queue()
 
-  //This allows the program to not hang when trying to join a large number of channels at once.
-  class helpThread() extends Thread {
+  //This is a helper thread that performs all sorts of background operations to make things "easy"
+  private[this] class helpThread() extends Thread {
+    setName("TwitchIRC Helper")
+
     override def run() {
       while(!Thread.interrupted()){
+        //Clear Read Buffer From `senders`--------------------------------------------
+        senders.foreach(emptyConnection(_))
 
+        //Retrieve message from `reader` into queue. Will be useful for Whispers later
+        val next = reader.getNextMessage()
+        if(next.isDefined){
+          val message = next.get
+          if (message.startsWith("PING ")) {
+            sendMessage("PONG " + message.drop(5), reader)
+          } else {
+            mailbox += Message(message)
+          }
+        }
+
+        //JOIN Channel----------------------------------------------------------------
         //Clear old joins
-        while (joins.size > 0 && System.currentTimeMillis - joins.head > 15000) {
+        if (joins.size > 0 && System.currentTimeMillis - joins.head > 15000) {
           joins.dequeue()
         }
 
-        //if there's a message to send and we're able to send it, do so.
+        //if there's a channel to join and we're able to join it, do so.
         if(joins.size < 50 && joinWaitlist.size > 0){
           val channel = joinWaitlist.dequeue()
           val lowerChannel = channel.toLowerCase
@@ -39,7 +56,6 @@ class TwitchIRC(private val _username : String, private val auth_token : String)
 
   def sendMessage(_msg : String, _connection : Connection) {
     _connection.sendMessage(_msg + (if (!_msg.endsWith("\r\n")) "\r\n" else ""))
-    emptySenders
   }
 
   def sendMessage(_msg : String) {
@@ -58,13 +74,10 @@ class TwitchIRC(private val _username : String, private val auth_token : String)
   }
 
   def getMessage() : Option[Message] = {
-    emptySenders
-    reader.getNextMessage match {
-      case None => None
-      case Some(s) => {
-        if (s.startsWith("PING ")) sendMessage("PONG " + s.drop(5), reader)
-        Some(Message(s))
-      }
+    if(mailbox.size > 0){
+      Some(mailbox.dequeue)
+    } else {
+      None
     }
   }
 
@@ -96,13 +109,9 @@ class TwitchIRC(private val _username : String, private val auth_token : String)
     helperThread.interrupt()
     helperThread.join()
     leaveChannels(channels)
-    emptySenders()
+    senders.foreach(emptyConnection(_))
     emptyConnection(reader)
     senders.forall(_.close()) && reader.close()
-  }
-
-  def emptySenders() {
-    senders.foreach(emptyConnection(_))
   }
 
   def emptyConnection(c : Connection) {
