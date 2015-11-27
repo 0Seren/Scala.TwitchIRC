@@ -5,7 +5,7 @@ This project is centered around providing an easy to use and flexible `Scala` li
 ###Pros:
 - Allow for unlimited message sending to single or multiple channels assuming the message are being sent from a Moderator level or higher source without fear of global ban.
 - Will join channels as soon as is able per Twitch Chat rules.
-- Parses incoming messages from channels into Message Case Classes.
+- Parses incoming messages from channels into [Message Case Classes](https://github.com/0Seren/Scala.TwitchIRC/blob/master/TwitchIRC/Message.scala).
 
 ###Cons (TODO's):
 - Does not currently have whisper support.
