@@ -24,7 +24,7 @@ irc.joinChannel(username)
 irc.joinChannels(channels_to_join)
 
 for(i <- 1 to 9001){
-  irc.sendMessage(i.toString, username)
+  irc.sendMessage(i.toString, channel)
 }
 
 while(/*!done*/){
