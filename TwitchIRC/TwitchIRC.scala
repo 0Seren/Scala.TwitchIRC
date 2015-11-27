@@ -54,7 +54,7 @@ class TwitchIRC(private val _username : String, private val auth_token : String)
   private[this] val helperThread : Thread = new Thread(new helpThread())
   helperThread.start()
 
-  def sendMessage(_msg : String, _connection : Connection) {
+  private[this] def sendMessage(_msg : String, _connection : Connection) {
     _connection.sendMessage(_msg + (if (!_msg.endsWith("\r\n")) "\r\n" else ""))
   }
 
