@@ -34,8 +34,10 @@ while(/*!done*/){
     case Some(sm: StatusMessage) => /*message sent pertaining to something like "sub mode on"*/
     case Some(tm : TwitchMessage) => /*misc messages sent from twitch.tv*/
     case Some(pem: ParseErrorMessage) => /*messages unable to be parsed (should be logged and reported here)*/
-    case Some(m : Message) => /*this should never occur, and if it does, it should be logged and reported here)*/
-    case _ => /*this should never occur, and if it does, it should be logged and reported here)*/
+    case Some(m : Message) => /*this should never occur, and if it does, it should be logged and reported here*/
+    case _ => /*this should never occur, and if it does, it should be logged and reported here*/
   }
 }
+
+irc.close()
 ```
