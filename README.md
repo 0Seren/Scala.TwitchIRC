@@ -41,3 +41,6 @@ while(/*!done*/){
 
 irc.close()
 ```
+ ##Output
+ ![Output](https://i.gyazo.com/e7b03649383811367b5483de97b2dde5.png "Output")
+ As you can see, if messages are sent too quickly they may arrive in a different order than sent.
