@@ -1,7 +1,5 @@
 #Scala.TwitchIRC
 
-##Due to Twitch Chat Server updates this project may no longer work for any/all channels.
-
 This project is centered around providing an easy to use and flexible `Scala` library that interacts with and adheres to Twitch Chat and their [rules/rate limits](https://github.com/justintv/Twitch-API/blob/master/IRC.md). It does so in such a way that the user of the library shouldn't have to fear about breaking any rate limits or rules.
 
 ###Pros:
