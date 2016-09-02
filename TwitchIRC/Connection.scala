@@ -11,18 +11,12 @@ import scala.collection.mutable
   * server       : String            -> The server to connect to
   * port         : Int               -> The port to connect to
   */
-class Connection(username : String, auth_token : String, server : String = "irc.twitch.tv", port : Int = 6667) {
+class Connection(server : String = "irc.chat.twitch.tv", port : Int = 6667) {
   private[this] val timeStamps : mutable.Queue[Long] = mutable.Queue()
   private[this] val address : java.net.InetAddress = java.net.InetAddress.getByName(server)
   private[this] val socket : java.net.Socket = new java.net.Socket(address, port)
   private[this] val writer = new java.io.BufferedWriter(new java.io.OutputStreamWriter(socket.getOutputStream))
   private[this] val reader = new java.io.BufferedReader(new java.io.InputStreamReader(socket.getInputStream))
-
-  sendMessage("PASS " + auth_token + "\r\n")
-  sendMessage("NICK " + username + "\r\n")
-  sendMessage("CAP REQ :twitch.tv/membership\r\n")
-  sendMessage("CAP REQ :twitch.tv/commands\r\n")
-  sendMessage("CAP REQ :twitch.tv/tags\r\n")
 
   def getNextMessage() : Option[String] = {
     if (reader.ready) {

@@ -8,8 +8,8 @@ class TwitchIRC(private val _username : String, private val auth_token : String)
   private[this] val username : String = _username.toLowerCase
   private[this] val joins : mutable.Queue[Long] = new mutable.Queue()
   private[this] val joinWaitlist : mutable.Queue[String] = new mutable.Queue()
-  private[this] val reader : Connection = new Connection(username, auth_token)
-  private[this] val senders : mutable.ArrayBuffer[Connection] = mutable.ArrayBuffer(new Connection(username, auth_token))
+  private[this] val reader : Connection = newFactoryConnection()
+  private[this] val senders : mutable.ArrayBuffer[Connection] = mutable.ArrayBuffer(newFactoryConnection())
   private[this] val channels : mutable.Set[String] = mutable.Set()
   private[this] val mailbox : mutable.Queue[Message] = mutable.Queue()
 
@@ -18,13 +18,13 @@ class TwitchIRC(private val _username : String, private val auth_token : String)
     setName("TwitchIRC Helper")
 
     override def run() {
-      while(!Thread.interrupted()){
+      while (!Thread.interrupted()) {
         //Clear Read Buffer From `senders`--------------------------------------------
         senders.foreach(emptyConnection(_))
 
         //Retrieve message from `reader` into queue. Will be useful for Whispers later
         val next = reader.getNextMessage()
-        if(next.isDefined){
+        if (next.isDefined) {
           val message = next.get
           if (message.startsWith("PING ")) {
             sendMessage("PONG " + message.drop(5), reader)
@@ -40,7 +40,7 @@ class TwitchIRC(private val _username : String, private val auth_token : String)
         }
 
         //if there's a channel to join and we're able to join it, do so.
-        if(joins.size < 50 && joinWaitlist.size > 0){
+        if (joins.size < 50 && joinWaitlist.size > 0) {
           val channel = joinWaitlist.dequeue()
           val lowerChannel = channel.toLowerCase
           sendMessage("JOIN #" + lowerChannel, reader)
@@ -62,7 +62,7 @@ class TwitchIRC(private val _username : String, private val auth_token : String)
     senders.find(_.ready()) match {
       case Some(c : Connection) => sendMessage(_msg, c)
       case _ => {
-        val newconnection = new Connection(username, auth_token)
+        val newconnection = newFactoryConnection()
         senders += newconnection
         sendMessage(_msg, newconnection)
       }
@@ -74,7 +74,7 @@ class TwitchIRC(private val _username : String, private val auth_token : String)
   }
 
   def getMessage() : Option[Message] = {
-    if(mailbox.size > 0){
+    if (mailbox.size > 0) {
       Some(mailbox.dequeue)
     } else {
       None
@@ -121,5 +121,16 @@ class TwitchIRC(private val _username : String, private val auth_token : String)
       if (value.startsWith("PING ")) sendMessage("PONG " + value.drop(5), c)
       next = c.getNextMessage
     }
+  }
+
+  def newFactoryConnection() : Connection = {
+    val connection = new Connection()
+    connection.sendMessage("PASS " + auth_token + "\r\n")
+    connection.sendMessage("NICK " + username + "\r\n")
+    connection.sendMessage("CAP REQ :twitch.tv/membership\r\n")
+    connection.sendMessage("CAP REQ :twitch.tv/commands\r\n")
+    connection.sendMessage("CAP REQ :twitch.tv/tags\r\n")
+
+    connection
   }
 }
